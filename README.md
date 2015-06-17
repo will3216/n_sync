@@ -37,6 +37,9 @@ NSync.configure do |config|
 
   config.cache_changes_with_redis   = true
   config.redis                      = Redis.current
+
+  # Defaults to [:development, :production, :test]
+  config.environments               = [:development, :production, :test, :my_env]
 end
 ```
 
@@ -50,8 +53,14 @@ class Person < ActiveRecord::Base
   store     :preference_settings
   serialize :names_of_pets
 
-  syncable do
-    id_for_sync     :uid
+  syncable :uid do
+
+    # if this is not provided, defaults to the environment listing in config.environments
+    link_group [:development, :production]
+    link_group [:test, :my_env]
+
+    # This will make it so that changes in production are picked up and applied to development
+    #auto_link :development => :production
 
     sync_string     :name
     sync_integer    :zipcode
